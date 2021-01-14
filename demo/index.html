@@ -1,0 +1,104 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <script>
+        let def = {};
+        window.addEventListener('load', () => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = () => {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        def = JSON.parse(xhr.responseText);
+                        display(def);
+                    }
+                }
+            }
+            xhr.open(
+                'GET',
+                'https://gitcdn.link/repo/suzuito/emoji/main/minilla/standard/.definition.json',
+            );
+            xhr.send();
+        });
+
+        function display(def) {
+            const elMain = document.getElementById('main');
+            elMain.style.position = 'absolute';
+            elMain.style.width = '100%';
+            def.forEach(group => {
+                const elGroup = document.createElement('div');
+                const elGroupTitle = document.createElement('div');
+                const elGroupActions = document.createElement('div');
+                elGroupTitle.textContent = group.group;
+                elGroup.appendChild(elGroupTitle);
+                elGroup.appendChild(elGroupActions);
+                elGroupActions.style.display = 'flex';
+                elGroupActions.style.flexWrap = 'wrap';
+                elGroupActions.style.width = '100%';
+                group.actions.forEach(action => {
+                    if (!action.content.imageUrl) {
+                        elEmoji = generateEmojiDoc3(action);
+                    } else {
+                        // elEmoji = generateEmojiDoc3(action); // 絵文字そのまま
+                        // elEmoji = generateEmojiDoc1(action); // 素朴な方法
+                        elEmoji = generateEmojiDoc2(action); // イケてる方法
+                    }
+                    elEmoji.id = action.content.emoji;
+                    elEmoji.style.cursor = 'pointer';
+                    elEmoji.onclick = (ev) => {
+                        if (ev.target.tagName.toLowerCase() === 'img') {
+                            alert(ev.target.parentNode.id);
+                        } else {
+                            alert(ev.target.id);
+                        }
+                    };
+                    elGroupActions.appendChild(elEmoji);
+                });
+                elMain.appendChild(elGroup);
+            });
+        }
+
+        function generateEmojiDoc1(action) {
+            const elEmoji = document.createElement('div');
+            const elEmojiImage = document.createElement('img');
+            elEmojiImage.src = action.content.imageUrl;
+            elEmojiImage.width = 16;
+            elEmojiImage.height = 16;
+            elEmoji.appendChild(elEmojiImage);
+            return elEmoji;
+        }
+
+        function generateEmojiDoc2(action) {
+            const elEmoji = document.createElement('div');
+            const imageUrl2 = action.content.imageUrl2
+            const emojiImageSize = 16;
+            const ratio = emojiImageSize / imageUrl2.emojiImageSize;
+            const bgPos = [
+                imageUrl2.column * emojiImageSize,
+                imageUrl2.row * emojiImageSize,
+            ];
+            const bgSize = [
+                imageUrl2.backgroundImageSize[0] * ratio,
+                imageUrl2.backgroundImageSize[1] * ratio,
+            ];
+            elEmoji.style.backgroundImage = `url(${imageUrl2.backgroundImageUrl})`;
+            elEmoji.style.backgroundPosition = `-${bgPos[0]}px -${bgPos[1]}px`;
+            elEmoji.style.backgroundSize = `${bgSize[0]}px ${bgSize[1]}px`;
+            elEmoji.style.width = `${emojiImageSize}px`;
+            elEmoji.style.height = `${emojiImageSize}px`;
+            return elEmoji;
+        }
+
+        function generateEmojiDoc3(action) {
+            const elEmoji = document.createElement('div');
+            elEmoji.textContent = action.content.emoji;
+            return elEmoji;
+        }
+    </script>
+</head>
+
+<body style='margin: 0px;'>
+    <div id='main'></div>
+</body>
+
+</html>
